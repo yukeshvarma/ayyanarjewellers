@@ -210,6 +210,17 @@
     dialog::backdrop { background:rgba(27,23,17,.63); backdrop-filter:blur(3px); }
     .product-dialog { width:min(900px,93vw); max-height:91vh; overflow:auto; }
     .dialog-close { position:absolute; z-index:4; top:12px; right:12px; width:35px; height:35px; display:grid; place-items:center; border:1px solid #e7dcc6; border-radius:50%; color:#403624; background:rgba(255,253,248,.96); font-size:20px; cursor:pointer; }
+    .privacy-dialog { width:min(760px,92vw); max-height:88vh; overflow:hidden; border:1px solid #dfd1b6; background:#fffdf8; }
+    .privacy-dialog-head { position:sticky; z-index:2; top:0; padding:17px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px; color:#fff9e9; background:linear-gradient(120deg,#382918,#775a2a); }
+    .privacy-dialog-head h2 { margin:0; font:500 23px var(--serif); }
+    .privacy-dialog-close { width:34px; height:34px; border:1px solid rgba(255,249,233,.4); border-radius:50%; color:#fff9e9; background:transparent; font-size:20px; cursor:pointer; }
+    .privacy-policy-content { max-height:calc(88vh - 68px); padding:20px 25px 28px; overflow:auto; color:#594f3f; }
+    .privacy-policy-content p,.privacy-policy-content li { font-size:11px; line-height:1.8; }
+    .privacy-policy-content h3 { margin:22px 0 6px; color:#49371b; font:500 20px var(--serif); }
+    .privacy-policy-content ul { padding-left:20px; }
+    .privacy-policy-updated { color:#897d67; font-size:9px!important; text-transform:uppercase; letter-spacing:.1em; }
+    .privacy-footer-link { padding:0; border:0; color:#b3b0a4; background:transparent; font:inherit; font-size:9px; text-align:left; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+    .privacy-footer-link:hover { color:white; }
     .product-dialog-content { min-height:505px; display:grid; grid-template-columns:1.02fr .98fr; background:#fffdf8; }
     .dialog-model { min-height:505px; position:relative; overflow:hidden; background:#e9dfcb; }
     .dialog-model img { width:100%; height:100%; position:absolute; inset:0; object-fit:cover; object-position:center 28%; }
@@ -282,7 +293,16 @@
     .tryon-caption { margin:7px 0 0; color:#716958; font-size:8px; line-height:1.55; }
     .tryon-picks { margin-top:7px; display:flex; flex-wrap:wrap; gap:5px; }
     .tryon-pick { padding:6px 8px; border:1px solid #d9c79f; border-radius:999px; color:#5b4727; background:white; font-size:7px; cursor:pointer; }
-    .privacy-copy { padding:0 12px 8px; color:#938a78; background:#fffdf8; font-size:7px; text-align:center; }
+    .voice-suggestion-wrap { width:100%; }
+    .voice-suggestion-wrap p { margin:0 0 7px; color:#776c58; font-size:8px; }
+    .voice-suggestion-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+    .voice-suggestion-card { min-width:0; padding:5px; border:1px solid #e6dcc9; border-radius:8px; color:#493c29; background:#fff; text-align:left; cursor:pointer; }
+    .voice-suggestion-card img { display:block; width:100%; height:76px; object-fit:contain; background:#f8f4eb; }
+    .voice-suggestion-card strong,.voice-suggestion-card small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .voice-suggestion-card strong { margin-top:5px; font:500 11px var(--serif); }
+    .voice-suggestion-card small { margin-top:3px; color:#80745f; font-size:7px; }
+    .privacy-copy { padding:0 12px 8px; color:#807866; background:#fffdf8; font-size:7.5px; line-height:1.6; text-align:center; }
+    .privacy-copy button { padding:0; border:0; color:#66502d; background:transparent; font:inherit; text-decoration:underline; cursor:pointer; }
     .invoice-result { width:min(100%,760px); margin:2px 0 5px; padding:10px; border:1px solid #e4dac8; border-radius:10px; color:#453c2d; background:#fffdf8; }
     .invoice-heading { margin:0 0 8px; font:500 17px var(--serif); }
     .invoice-subhead { margin:0 0 9px; color:#7d735f; font-size:7.5px; }
@@ -399,6 +419,9 @@
       .dialog-model { min-height:0; height:48vh; max-height:450px; }
       .dialog-details { padding:25px 21px 24px; }
       .dialog-details h2 { font-size:34px; }
+      .privacy-policy-content { padding:16px 19px 24px; }
+      .voice-suggestion-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .voice-suggestion-card img { height:86px; }
       .cart-dialog { padding:21px 17px; }
       .ai-fab { left:15px; right:auto; bottom:15px; min-height:61px; padding-inline:19px; gap:12px; font-size:10px; }
       .ai-chat-window { right:8px; bottom:72px; width:calc(100vw - 16px); height:min(76dvh,680px); border-radius:15px; }
@@ -482,7 +505,7 @@
     </section>
   </main>
 
-  <footer class="site-footer"><div class="footer-main"><div class="footer-brand"><a class="brand" href="#top"><img class="brand-logo" src="assets/ayyanar-logo.png" alt="" width="512" height="512" loading="lazy" decoding="async"><span class="brand-name">Ayyanar Jewellery<small>Gold · Made personal</small></span></a><p>A little saving, a golden future. Jewellery for the moments you keep.</p></div><div class="footer-col"><h4>Collections</h4><a href="#cat-ring">Ring</a><a href="#cat-earrings">Earrings</a><a href="#cat-necklaces">Necklaces & chains</a><a href="#cat-bridal">Bridal Jewellery</a></div><div class="footer-col"><h4>Discover</h4><a href="#savings">Gold savings</a><a href="#about">About Ayyanar</a><a href="#resale">Old gold estimate</a><a href="#gold-rates">Live gold rate</a></div><div class="footer-col"><h4>Visit</h4><a href="#about">Ayyanar Jewellery</a><a href="#about">Chennai, India</a><a href="#gold-rates">Daily gold spot reference</a><a href="https://goldprice.org/live-gold-price.html" target="_blank" rel="noreferrer">GoldPrice.org ↗</a></div></div><div class="footer-bottom"><span>© 2026 Ayyanar Jewellery · Product designs, product prices and business policies are concept placeholders.</span><span class="image-note">The supplied model photos are category styling references. Upload a matching model photo with each SKU for an exact product view. Sample product imagery: <a href="https://www.pexels.com/" target="_blank" rel="noreferrer">Pexels</a>. Rates are live spot estimates; retail prices may differ.</span></div></footer>
+  <footer class="site-footer"><div class="footer-main"><div class="footer-brand"><a class="brand" href="#top"><img class="brand-logo" src="assets/ayyanar-logo.png" alt="" width="512" height="512" loading="lazy" decoding="async"><span class="brand-name">Ayyanar Jewellery<small>Gold · Made personal</small></span></a><p>A little saving, a golden future. Jewellery for the moments you keep.</p></div><div class="footer-col"><h4>Collections</h4><a href="#cat-ring">Ring</a><a href="#cat-earrings">Earrings</a><a href="#cat-necklaces">Necklaces & chains</a><a href="#cat-bridal">Bridal Jewellery</a></div><div class="footer-col"><h4>Discover</h4><a href="#savings">Gold savings</a><a href="#about">About Ayyanar</a><a href="#resale">Old gold estimate</a><a href="#gold-rates">Live gold rate</a></div><div class="footer-col"><h4>Visit</h4><a href="#about">Ayyanar Jewellery</a><a href="#about">Chennai, India</a><a href="#gold-rates">Daily gold spot reference</a><a href="https://goldprice.org/live-gold-price.html" target="_blank" rel="noreferrer">GoldPrice.org ↗</a><button class="privacy-footer-link" id="privacyOpen" type="button">Privacy policy</button></div></div><div class="footer-bottom"><span>© 2026 Ayyanar Jewellery · Product designs, product prices and business policies are concept placeholders.</span><span class="image-note">The supplied model photos are category styling references. Upload a matching model photo with each SKU for an exact product view. Sample product imagery: <a href="https://www.pexels.com/" target="_blank" rel="noreferrer">Pexels</a>. Rates are live spot estimates; retail prices may differ.</span></div></footer>
 
   <button class="ai-fab" id="aiOpen" type="button" aria-controls="aiChat" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.5 8.5 0 0 1-3.6-.8L4 20l1.4-3.5A7.2 7.2 0 0 1 4 12c0-4.2 3.6-7.5 8-7.5s8 2.8 8 7Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></svg><span>Ask our AI stylist</span></button>
   <section class="ai-chat-window" id="aiChat" aria-label="Ayyanar virtual stylist" hidden>
@@ -490,10 +513,11 @@
     <div class="ai-messages" id="aiMessages" aria-live="polite"></div>
     <div class="chat-quick-actions"><button class="chat-chip" type="button" data-chat="try on a ring">Try a ring</button><button class="chat-chip" type="button" data-chat="try on earrings">Try earrings</button><button class="chat-chip" type="button" data-chat="try on a necklace">Try a necklace</button><button class="chat-chip" type="button" data-chat="how do you estimate price?">Ask about price</button></div>
     <div class="chat-upload-row"><select id="tryOnArea" aria-label="Choose the photo area to style"><option value="hand">Hand · ring or bracelet</option><option value="face">Face · earrings</option><option value="neck">Face and neckline · chain</option></select><button class="chat-camera-button" id="cameraFaceButton" type="button">◎ Try on with camera</button><label class="chat-photo-button" for="stylistPhoto"><span>＋ Upload photo</span><input id="stylistPhoto" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload a face, hand or neckline photo"></label></div>
-    <p class="privacy-copy">Camera starts only after permission. Try-on photos are processed in your browser and never sent to us; closing the chat clears the temporary previews.</p>
+    <p class="privacy-copy">Try-on photos stay in this browser. Voice calls send audio and in-call typed messages to Vapi. Try saying “Show bridal designs” or “Suggest earrings for a round face.” <button type="button" id="privacyOpenChat">Privacy policy</button></p>
     <form class="ai-composer" id="aiForm"><input id="aiInput" type="text" placeholder="Ask a simple jewellery question…" autocomplete="off" aria-label="Message Ayyanar Stylist"><button class="ai-send" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2.5-7.5L3 11Z"/><path d="m10.5 13.5 5-5"/></svg></button></form>
   </section>
 
+  <dialog class="privacy-dialog" id="privacyDialog" aria-labelledby="privacyTitle"><div class="privacy-dialog-head"><h2 id="privacyTitle">Your privacy at Ayyanar Jewellery</h2><button class="privacy-dialog-close" id="privacyClose" type="button" aria-label="Close privacy policy">×</button></div><div class="privacy-policy-content"><p class="privacy-policy-updated">Website privacy notice · Updated 15 November 2026</p><p>This notice explains what the Ayyanar Jewellery website demo processes when you browse designs, use the stylist, upload a photo, or start a voice call.</p><h3>Photos and camera try-on</h3><p>Hand, face, or neckline photos chosen for try-on are processed in your browser for face/hand landmarks and an approximate placement preview. An old-gold photo is only shown as a local preview; the estimate uses the weight and purity you enter and does not determine them from the photo. The website does not upload these photos to Ayyanar Jewellery or Vapi. Previews exist temporarily on your device; closing the chat removes the visible try-on preview, and refreshing or closing the page clears browser memory. Camera access begins only after you allow it, and you can stop the camera at any time. This feature does not identify who you are.</p><h3>Voice calls and chat messages</h3><p>If you choose to start a Vapi voice call, your microphone audio is sent to Vapi and its configured service providers so the assistant can respond. Voice transcripts are shown in the chat window. Typed messages sent while the call is active are also sent to Vapi. Vapi may process or retain call data according to the assistant’s recording, transcript, and retention settings. The website does not send your try-on photo or camera stream to Vapi.</p><p>When no Vapi call is active, the text stylist uses the website’s built-in sample replies and catalogue suggestions in your browser. Those messages are not sent to Vapi. The catalogue and price estimate features are demonstrations and do not place an order or submit your contact details.</p><h3>Hosting and external services</h3><p>The site is hosted by Netlify. The browser also loads some jewellery images and the optional hand/face landmark software from third-party services. Those providers may receive standard technical request information, such as your IP address and browser details, when your browser fetches their content. Their own privacy notices apply to their services. Opening an external rate or image link takes you to that provider’s website.</p><h3>Your choices</h3><ul><li>You can browse without uploading a photo or enabling your camera.</li><li>You can decline microphone access and continue using the site without voice calls.</li><li>You can close the chat to remove its temporary try-on previews.</li></ul><h3>Questions</h3><p>For privacy questions or requests, contact Ayyanar Jewellery through the shop’s official contact channels. This demo site does not currently collect account, payment-card, or order details.</p></div></dialog>
   <dialog class="product-dialog" id="productDialog" aria-label="Jewellery model preview"><button class="dialog-close" id="productClose" aria-label="Close product preview">×</button><div class="product-dialog-content" id="productDialogContent"></div></dialog>
   <dialog class="cart-dialog" id="cartDialog" aria-label="Jewellery request bag"><div class="cart-head"><h2>Your request bag <span id="cartCountLabel"></span></h2><button class="cart-close" id="cartClose" aria-label="Close request bag">×</button></div><div id="cartItems"></div><div class="cart-total"><span>Selected designs</span><strong id="cartTotal">0 pieces</strong></div><button class="btn estimate-submit" id="requestPieces" type="button">Ask about selected designs</button><p class="cart-footnote">The request bag is a concept preview. It does not submit your details or place an order.</p></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -572,8 +596,9 @@
     const SHOP_RATE_SOURCE = "https://www.livechennai.com/detailnews.asp?catid=56&newsid=84720";
     const VAPI_PUBLIC_API_KEY = "d932e665-1267-4325-b990-3249e7d4b3b6";
     const VAPI_ASSISTANT_ID = "6a4f8f23-bdca-41f4-acce-67d1906eec14";
-    const aiMessages = document.getElementById("aiMessages"), aiChat = document.getElementById("aiChat");
+    const aiMessages = document.getElementById("aiMessages"), aiChat = document.getElementById("aiChat"), privacyDialog = document.getElementById("privacyDialog");
     let chatStarted = false, visionPackagePromise, visionTasksPromise, faceLandmarkerPromise, handLandmarkerPromise, lastTryOn = null, vapiScriptPromise, vapiWidgetInstance = null, vapiCallStarting = false, vapiCallActive = false, pendingTryOnProductId = null;
+    const pendingVapiTextEchoes = [];
     function addChatMessage(text, role="assistant", html=false) {
       const message=document.createElement("div"); message.className=`chat-msg ${role}`;
       if(html) message.innerHTML=text; else message.textContent=text;
@@ -597,14 +622,62 @@
     }
     function startChat() {
       aiChat.hidden=false; document.getElementById("aiOpen").setAttribute("aria-expanded","true");
-      if(!chatStarted){chatStarted=true;addChatMessage("Hello! I can answer jewellery questions, estimate a design from its weight, or suggest styles from a hand or face. For face styling, use the camera scan or choose a photo; the landmark check runs on your device.");}
+      if(!chatStarted){chatStarted=true;addChatMessage("Hello! I can help you explore Ayyanar designs, estimate gold value, or try a style on your photo. Tap the microphone and say “Show bridal designs,” “Suggest earrings for a round face,” or “Open Leaflight Ring.” Your photos stay on this device.");}
       document.getElementById("aiInput").focus();
     }
     document.getElementById("aiOpen").addEventListener("click",startChat);
     document.getElementById("aiClose").addEventListener("click",()=>{stopStylistCamera();clearPrivateStylistPreviews();aiChat.hidden=true;document.getElementById("aiOpen").setAttribute("aria-expanded","false")});
+    function openPrivacyPolicy(){if(privacyDialog&&!privacyDialog.open)privacyDialog.showModal()}
+    document.getElementById("privacyOpen").addEventListener("click",openPrivacyPolicy);
+    document.getElementById("privacyOpenChat").addEventListener("click",openPrivacyPolicy);
+    document.getElementById("privacyClose").addEventListener("click",()=>privacyDialog.close());
+    function chooseVoiceProducts(raw) {
+      const text=String(raw||"").trim(),lower=text.toLowerCase();
+      if(!text||/\b(?:don't want|do not want|not looking for|without|no need for)\b/.test(lower))return false;
+      const namedProduct=allProducts.find(product=>lower.includes(product.name.toLowerCase()));
+      if(namedProduct&&/\b(?:open|show|view|see|try|select|choose)\b/.test(lower)){
+        addChatMessage(`Opening ${namedProduct.name} so you can see its model preview.`);openProduct(namedProduct.id);return true;
+      }
+      let categoryId=null;
+      if(/\b(?:bridal|wedding|muhurtham|marriage)\b/.test(lower))categoryId="bridal";
+      else if(/\b(?:earring|earrings|jhumka|jhumkas|studs|hoops)\b/.test(lower))categoryId="earrings";
+      else if(/\b(?:necklace|necklaces|pendant|neckline)\b/.test(lower))categoryId="necklaces";
+      else if(/\b(?:chain|chains|layered chain)\b/.test(lower))categoryId="chains";
+      else if(/\b(?:bracelet|bracelets|bangle|bangles|wrist)\b/.test(lower))categoryId="bracelet";
+      else if(/\b(?:ring|rings|finger)\b/.test(lower))categoryId="ring";
+      else if(/\b(?:round|oval|square|heart-shaped|long)\s+(?:face|face shape)\b|\bface shape\b/.test(lower))categoryId="earrings";
+      const asksForIdeas=/\b(?:suggest|recommend|show|browse|looking for|want|need|find|which design|jewellery for|something for|ideas for|gift)\b/.test(lower);
+      if(!categoryId&&!asksForIdeas)return false;
+      let products=categoryId?(categories.find(category=>category.id===categoryId)?.items||[]):["earrings","necklaces","ring"].map(id=>categories.find(category=>category.id===id)?.items?.[0]).filter(Boolean);
+      products=products.slice(0,3);if(!products.length)return false;
+      const heading=categoryId?categories.find(category=>category.id===categoryId)?.label:"A few Ayyanar favourites";
+      const html=`<div class="voice-suggestion-wrap"><p>Here are ${heading} designs from the current catalogue. Tap a design for its model preview.</p><div class="voice-suggestion-grid">${products.map(product=>`<button class="voice-suggestion-card" type="button" data-voice-product="${escapeHtml(product.id)}"><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async"><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.detail||product.category||"Ayyanar design")}</small></button>`).join("")}</div></div>`;
+      const message=addChatMessage(html,"assistant",true);message.style.maxWidth="100%";return true;
+    }
+    aiMessages.addEventListener("click",event=>{const card=event.target.closest("[data-voice-product]");if(card)openProduct(card.dataset.voiceProduct)});
+    function voiceCatalogueContext(){
+      const catalogue=allProducts.slice(0,80).map(product=>`${product.category||product.categoryId}: ${product.name} — ${product.detail||"Ayyanar Jewellery design"}${product.weightGrams?` · listed weight ${product.weightGrams} g`:""}`).join("\n");
+      return `You are also the live voice stylist for Ayyanar Jewellery's website. Use the current catalogue below when customers ask for designs or recommendations. Suggest one or two listed designs by their exact names and briefly explain the fit using the listed details. The website will show matching design cards in the chat when a customer asks by category. Never invent prices, weights, purity, stock, or product features; if a detail is absent, say the shop must confirm it. For styling, be warm and measured, and never promise an exact fit.\n\nCurrent website catalogue:\n${catalogue}`;
+    }
     function chatReply(raw) {
       const text=raw.trim(), lower=text.toLowerCase(); if(!text)return;
       addChatMessage(text,"user");
+      if(vapiCallActive){
+        chooseVoiceProducts(text);
+        if(typeof vapiWidgetInstance?.send!=="function"){
+          addChatMessage("Your voice call is active, but typed messages cannot reach it right now. Please speak to the assistant or end the call to use the website chat.");return;
+        }
+        const echoKey=text.toLowerCase().replace(/\s+/g," ");
+        pendingVapiTextEchoes.push({key:echoKey,createdAt:Date.now()});
+        try{
+          const result=vapiWidgetInstance.send({type:"add-message",message:{role:"user",content:text}});
+          if(result&&typeof result.catch==="function")result.catch(()=>addChatMessage("I couldn’t send that message to the voice assistant. Please try speaking or send it again after the call reconnects."));
+        }catch(error){
+          pendingVapiTextEchoes.pop();
+          addChatMessage("I couldn’t send that message to the voice assistant. Please try speaking or send it again after the call reconnects.");
+        }
+        return;
+      }
       const weightMatch=lower.replace(/,/g,"").match(/(?:₹\s*)?(\d+(?:\.\d+)?)\s*(?:g|gram|grams)\b/i);
       const asksPrice=/price|cost|quote|estimate|how much|rate/.test(lower);
       if(asksPrice||weightMatch){
@@ -622,6 +695,7 @@
       if(/saving|plan|₹20|1200|1 gram|one gram/.test(lower)){addChatMessage("The page shows the two sample savings plans: ₹20 a day toward 1 gram in two years, and ₹1,200 a month toward 1 gram in one year. Please confirm the current terms with Ayyanar Jewellery.");return;}
       if(/resale|old gold|sell|exchange/.test(lower)){addChatMessage("Use the “Old gold value” section to add a photo, approximate weight and purity for an indicative estimate. An in-store purity check is needed for a final value.");return;}
       if(/deliver|delivery|order|address|location|open|hours|contact/.test(lower)){addChatMessage("I can help with designs and estimates here. Store address, opening hours, delivery and order contact details still need to be added by Ayyanar Jewellery.");return;}
+      if(chooseVoiceProducts(text))return;
       addChatMessage("I can help with rings, earrings, necklaces, chains, bracelets, bridal designs, sample price estimates and photo styling. What would you like to explore?");
     }
     document.getElementById("aiForm").addEventListener("submit",event=>{event.preventDefault();const input=document.getElementById("aiInput"),value=input.value;input.value="";chatReply(value)});
@@ -645,8 +719,20 @@
           if(!session||typeof session.start!=="function")throw new Error("Vapi did not return a callable browser session.");
           vapiWidgetInstance=session;
           if(session.on){
-            session.on("call-start",()=>{vapiCallActive=true;addChatMessage("You’re connected with Ayyanar Jewellery Customer Care. Speak whenever you’re ready.")});
+            session.on("call-start",()=>{vapiCallActive=true;addChatMessage("You’re connected with Ayyanar Jewellery Customer Care. Try saying “Show bridal designs” or “Suggest earrings for a round face.”");try{vapiWidgetInstance.send({type:"add-message",message:{role:"system",content:voiceCatalogueContext()},triggerResponseEnabled:false})}catch(error){console.warn("Could not share the current catalogue with the voice stylist.",error)}});
             session.on("call-end",()=>{vapiCallActive=false;addChatMessage("Your voice call has ended. Tap the microphone above to call again.")});
+            session.on("message",message=>{
+              if(message?.type!=="transcript"||message.transcriptType!=="final"||!(["user","assistant"].includes(message.role)))return;
+              const transcript=String(message.transcript||"").trim();if(!transcript)return;
+              if(message.role==="user"){
+                const now=Date.now(),key=transcript.toLowerCase().replace(/\s+/g," ");
+                for(let i=pendingVapiTextEchoes.length-1;i>=0;i--)if(now-pendingVapiTextEchoes[i].createdAt>30000)pendingVapiTextEchoes.splice(i,1);
+                const typedEchoIndex=pendingVapiTextEchoes.findIndex(entry=>entry.key===key);
+                if(typedEchoIndex>=0){pendingVapiTextEchoes.splice(typedEchoIndex,1);return;}
+              }
+              addChatMessage(transcript,message.role);
+              if(message.role==="user")chooseVoiceProducts(transcript);
+            });
             session.on("error",()=>addChatMessage("The voice call could not connect. Check microphone access and the Vapi public key’s website and assistant restrictions."));
           }
         }
