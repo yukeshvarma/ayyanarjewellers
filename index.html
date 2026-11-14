@@ -573,7 +573,7 @@
     const VAPI_PUBLIC_API_KEY = "d932e665-1267-4325-b990-3249e7d4b3b6";
     const VAPI_ASSISTANT_ID = "6a4f8f23-bdca-41f4-acce-67d1906eec14";
     const aiMessages = document.getElementById("aiMessages"), aiChat = document.getElementById("aiChat");
-    let chatStarted = false, visionPackagePromise, visionTasksPromise, faceLandmarkerPromise, handLandmarkerPromise, lastTryOn = null, vapiScriptPromise, vapiWidgetInstance = null, pendingTryOnProductId = null;
+    let chatStarted = false, visionPackagePromise, visionTasksPromise, faceLandmarkerPromise, handLandmarkerPromise, lastTryOn = null, vapiScriptPromise, vapiWidgetInstance = null, vapiCallStarting = false, vapiCallActive = false, pendingTryOnProductId = null;
     function addChatMessage(text, role="assistant", html=false) {
       const message=document.createElement("div"); message.className=`chat-msg ${role}`;
       if(html) message.innerHTML=text; else message.textContent=text;
@@ -634,9 +634,29 @@
     }
     document.getElementById("vapiStart").addEventListener("click",async()=>{
       if(VAPI_PUBLIC_API_KEY==="YOUR_PUBLIC_API_KEY"||VAPI_ASSISTANT_ID==="YOUR_ASSISTANT_ID"){addChatMessage("Your Ayyanar Jewellery support assistant is selected. Add its Vapi Public API Key to enable browser voice calls; never put a private Vapi key in this page.");return;}
-      if(vapiWidgetInstance){addChatMessage("The round Vapi phone button is just above the larger chat button at the bottom-left. Tap it to start your call.");return;}
-      try{await loadVapiWidget();if(!window.vapiSDK?.run)throw new Error("Vapi widget script loaded without its run function.");vapiWidgetInstance=window.vapiSDK.run({apiKey:VAPI_PUBLIC_API_KEY,assistant:VAPI_ASSISTANT_ID,config:{position:"bottom-left",offset:"110px",width:"58px",height:"58px",idle:{color:"rgb(74,56,28)",type:"round"},loading:{color:"rgb(183,143,60)",type:"round"},active:{color:"rgb(129,48,37)",type:"round"}}});if(vapiWidgetInstance?.on){vapiWidgetInstance.on("call-start",()=>addChatMessage("You’re connected with Ayyanar Jewellery Customer Care. Speak whenever you’re ready."));vapiWidgetInstance.on("call-end",()=>addChatMessage("Your voice call has ended. You can start another call using the phone button."));vapiWidgetInstance.on("error",()=>addChatMessage("The voice call could not connect. Check microphone permission and the Vapi key’s allowed website and assistant settings."));}addChatMessage("The round Vapi phone button is at the bottom-left, just above the larger chat button. Tap it to start the call, then allow microphone access.");}
-      catch(error){console.error("Vapi widget failed to load",error);addChatMessage("I couldn't load the voice call button. Open the HTTPS website, allow microphone access, and check that the Vapi Public API Key allows this website and assistant.");}
+      if(vapiCallStarting){addChatMessage("Your voice call is starting. Please allow microphone access if your browser asks.");return;}
+      if(vapiCallActive){addChatMessage("Your voice call is connected. Speak into your microphone whenever you’re ready.");return;}
+      vapiCallStarting=true;
+      try{
+        await loadVapiWidget();
+        if(!window.vapiSDK?.run)throw new Error("Vapi web SDK did not load.");
+        if(!vapiWidgetInstance){
+          const session=window.vapiSDK.run({apiKey:VAPI_PUBLIC_API_KEY,assistant:VAPI_ASSISTANT_ID,config:{position:"bottom-left",offset:"110px",width:"58px",height:"58px",idle:{color:"rgb(74,56,28)",type:"round"},loading:{color:"rgb(183,143,60)",type:"round"},active:{color:"rgb(129,48,37)",type:"round"}}});
+          if(!session||typeof session.start!=="function")throw new Error("Vapi did not return a callable browser session.");
+          vapiWidgetInstance=session;
+          if(session.on){
+            session.on("call-start",()=>{vapiCallActive=true;addChatMessage("You’re connected with Ayyanar Jewellery Customer Care. Speak whenever you’re ready.")});
+            session.on("call-end",()=>{vapiCallActive=false;addChatMessage("Your voice call has ended. Tap the microphone above to call again.")});
+            session.on("error",()=>addChatMessage("The voice call could not connect. Check microphone access and the Vapi public key’s website and assistant restrictions."));
+          }
+        }
+        addChatMessage("Starting your voice call now. Allow microphone access when your browser asks, then speak when you hear the connection.");
+        await vapiWidgetInstance.start(VAPI_ASSISTANT_ID);
+      }catch(error){
+        console.error("Vapi call failed",error);
+        const detail=error?.name==="NotAllowedError"||/microphone|permission/i.test(String(error?.message||""))?"Microphone access is blocked. Allow it in your browser’s site settings, reload, and try again.":"The call could not connect. Check that your Vapi Public API Key allows this Netlify website and the Ayyanar assistant.";
+        addChatMessage(detail);
+      }finally{vapiCallStarting=false;}
     });
 
     async function getLandmarker(kind) {
