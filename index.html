@@ -706,7 +706,7 @@
     document.querySelectorAll("[data-chat]").forEach(button=>button.addEventListener("click",()=>{const choice=button.dataset.chat.toLowerCase();if(choice.includes("ring"))document.getElementById("tryOnArea").value="hand";else if(choice.includes("earring"))document.getElementById("tryOnArea").value="face";else if(choice.includes("necklace"))document.getElementById("tryOnArea").value="neck";chatReply(button.dataset.chat)}));
 
     function loadVapiWidget() {
-      if(!vapiScriptPromise)vapiScriptPromise=import("https://cdn.jsdelivr.net/npm/@vapi-ai/web/+esm").then(module=>{
+      if(!vapiScriptPromise)vapiScriptPromise=import("https://cdn.jsdelivr.net/npm/@vapi-ai/web@3.1.1/+esm").then(module=>{
         const Vapi=module.default||module.Vapi;
         if(typeof Vapi!=="function")throw new Error("Vapi web SDK did not load.");
         return Vapi;
@@ -734,18 +734,20 @@
         }
       });
       session.on("call-start-failed",reportVapiFailure);
-      session.on("call-start-progress",event=>{if(event?.status==="failed")reportVapiFailure(event)});
+      session.on("call-start-progress",event=>{if(event?.stage)lastVapiStage=String(event.stage).slice(0,70);if(event?.status==="failed")reportVapiFailure(event)});
       session.on("error",reportVapiFailure);
     }
-    let lastVapiFailureAt=0;
+    let lastVapiFailureAt=0, lastVapiStage="";
     function reportVapiFailure(error){
       console.warn("Vapi voice connection failed",error);
       if(Date.now()-lastVapiFailureAt<1200)return;
       lastVapiFailureAt=Date.now();
-      const stage=String(error?.stage||error?.error?.stage||"").slice(0,70),type=String(error?.type||error?.error?.type||error?.error?.name||error?.name||"").slice(0,70),code=String(error?.error?.code||error?.code||"").slice(0,40),reason=String(typeof error?.error==="string"?error.error:error?.error?.message||error?.message||"").slice(0,120),signature=[stage,type,code,reason].filter(Boolean).join(" · ").toLowerCase();
+      const nested=error?.error, response=error?.response?.data||error?.data||error?.body;
+      const stage=String(error?.stage||nested?.stage||lastVapiStage||"").slice(0,70),type=String(error?.type||nested?.type||nested?.name||error?.name||"").slice(0,70),code=String(nested?.code||error?.code||"").slice(0,40),status=String(error?.response?.status||error?.statusCode||error?.status||nested?.status||"").slice(0,20);
+      const reason=String(typeof nested==="string"?nested:nested?.message||error?.message||error?.cause?.message||response?.message||response?.error||"").replaceAll(VAPI_PUBLIC_API_KEY,"[public key hidden]").slice(0,180),signature=[stage,type,code,status,reason].filter(Boolean).join(" · ").toLowerCase();
       if(/microphone|permission|notallowed|notfound|deviceinuse/.test(signature)){addChatMessage("The voice call could not access your microphone. Allow microphone access for ayyanarjewellers.netlify.app in your browser’s site settings, then reload and try again.");return;}
-      const details=[stage&&`stage: ${stage}`,type&&`type: ${type}`,code&&`code: ${code}`].filter(Boolean).join(" · ");
-      addChatMessage(`Vapi voice connection failed${details?` (${details})`:""}. The public key and assistant ID are present; this detail identifies what blocked the call.`);
+      const details=[stage&&`stage: ${stage}`,type&&`type: ${type}`,code&&`code: ${code}`,status&&`HTTP ${status}`,reason&&`detail: ${reason}`].filter(Boolean).join(" · ");
+      addChatMessage(`Vapi could not start the voice call${details?` (${details})`:". No further error detail was returned."} Check that the public key is valid and allows this Netlify origin and the selected assistant.`);
     }
     document.getElementById("vapiStart").addEventListener("click",async()=>{
       if(VAPI_PUBLIC_API_KEY==="YOUR_PUBLIC_API_KEY"||VAPI_ASSISTANT_ID==="YOUR_ASSISTANT_ID"){addChatMessage("Your Ayyanar Jewellery support assistant is selected. Add its Vapi Public API Key to enable browser voice calls; never put a private Vapi key in this page.");return;}
