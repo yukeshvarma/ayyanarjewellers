@@ -603,8 +603,7 @@
     const VAPI_PUBLIC_API_KEY = "d932e665-1267-4325-b990-3249e7d4b3b6";
     const VAPI_ASSISTANT_ID = "6a4f8f23-bdca-41f4-acce-67d1906eec14";
     const aiMessages = document.getElementById("aiMessages"), aiChat = document.getElementById("aiChat"), privacyDialog = document.getElementById("privacyDialog");
-    let chatStarted = false, visionPackagePromise, visionTasksPromise, faceLandmarkerPromise, handLandmarkerPromise, lastTryOn = null, vapiScriptPromise, vapiWidgetInstance = null, vapiCallStarting = false, vapiCallActive = false, pendingTryOnProductId = null;
-    const pendingVapiTextEchoes = [];
+    let chatStarted = false, visionPackagePromise, visionTasksPromise, faceLandmarkerPromise, handLandmarkerPromise, lastTryOn = null, vapiScriptPromise, vapiWidgetInstance = null, vapiControlUrl = null, vapiCallStarting = false, vapiCallActive = false, pendingTryOnProductId = null;
     function addChatMessage(text, role="assistant", html=false) {
       const message=document.createElement("div"); message.className=`chat-msg ${role}`;
       if(html) message.innerHTML=text; else message.textContent=text;
@@ -680,19 +679,7 @@
       const text=raw.trim(), lower=text.toLowerCase(); if(!text)return;
       addChatMessage(text,"user");
       if(vapiCallActive){
-        chooseVoiceProducts(text);
-        if(typeof vapiWidgetInstance?.send!=="function"){
-          addChatMessage("Your voice call is active, but typed messages cannot reach it right now. Please speak to the assistant or end the call to use the website chat.");return;
-        }
-        const echoKey=text.toLowerCase().replace(/\s+/g," ");
-        pendingVapiTextEchoes.push({key:echoKey,createdAt:Date.now()});
-        try{
-          const result=vapiWidgetInstance.send({type:"add-message",message:{role:"user",content:text}});
-          if(result&&typeof result.catch==="function")result.catch(()=>addChatMessage("I couldn’t send that message to the voice assistant. Please try speaking or send it again after the call reconnects."));
-        }catch(error){
-          pendingVapiTextEchoes.pop();
-          addChatMessage("I couldn’t send that message to the voice assistant. Please try speaking or send it again after the call reconnects.");
-        }
+        sendVapiLiveControl({type:"append-context",kind:"instructions",content:`The customer typed this request in the website chat: “${text}”. Answer it naturally and briefly in your next spoken response.`}).then(sent=>{if(!sent)addChatMessage("That message stayed in the chat, but Vapi could not receive it. Please speak your request or reconnect the call.")});
         return;
       }
       const weightMatch=extractWeightGrams(lower);
@@ -735,16 +722,10 @@
     }
     function connectVapiEvents(session){
       session.on("call-start",()=>{vapiCallActive=true;setVoiceButtonState(true);addChatMessage("You’re connected with Ayyanar Jewellery Customer Care. Ask for the 22K/916 per-gram reference, request a jewellery estimate by weight, say “Show bridal designs,” or ask for styling advice.")});
-      session.on("call-end",()=>{vapiCallActive=false;setVoiceButtonState(false);addChatMessage("Your voice call has ended. Tap Call above to speak again.")});
+      session.on("call-end",()=>{vapiCallActive=false;vapiControlUrl=null;setVoiceButtonState(false);addChatMessage("Your voice call has ended. Tap Call above to speak again.")});
       session.on("message",message=>{
         if(message?.type!=="transcript"||message.transcriptType!=="final"||!(["user","assistant"].includes(message.role)))return;
         const transcript=String(message.transcript||"").trim();if(!transcript)return;
-        if(message.role==="user"){
-          const now=Date.now(),key=transcript.toLowerCase().replace(/\s+/g," ");
-          for(let i=pendingVapiTextEchoes.length-1;i>=0;i--)if(now-pendingVapiTextEchoes[i].createdAt>30000)pendingVapiTextEchoes.splice(i,1);
-          const typedEchoIndex=pendingVapiTextEchoes.findIndex(entry=>entry.key===key);
-          if(typedEchoIndex>=0){pendingVapiTextEchoes.splice(typedEchoIndex,1);return;}
-        }
         addChatMessage(transcript,message.role);
         if(message.role==="user"){
           handleVoicePriceTranscript(transcript);
@@ -752,7 +733,19 @@
           chooseVoiceProducts(transcript);
         }
       });
-      session.on("error",()=>addChatMessage("The voice call could not connect. Check microphone access and the Vapi public key’s website and assistant restrictions."));
+      session.on("call-start-failed",reportVapiFailure);
+      session.on("call-start-progress",event=>{if(event?.status==="failed")reportVapiFailure(event)});
+      session.on("error",reportVapiFailure);
+    }
+    let lastVapiFailureAt=0;
+    function reportVapiFailure(error){
+      console.warn("Vapi voice connection failed",error);
+      if(Date.now()-lastVapiFailureAt<1200)return;
+      lastVapiFailureAt=Date.now();
+      const stage=String(error?.stage||error?.error?.stage||"").slice(0,70),type=String(error?.type||error?.error?.type||error?.error?.name||error?.name||"").slice(0,70),code=String(error?.error?.code||error?.code||"").slice(0,40),reason=String(typeof error?.error==="string"?error.error:error?.error?.message||error?.message||"").slice(0,120),signature=[stage,type,code,reason].filter(Boolean).join(" · ").toLowerCase();
+      if(/microphone|permission|notallowed|notfound|deviceinuse/.test(signature)){addChatMessage("The voice call could not access your microphone. Allow microphone access for ayyanarjewellers.netlify.app in your browser’s site settings, then reload and try again.");return;}
+      const details=[stage&&`stage: ${stage}`,type&&`type: ${type}`,code&&`code: ${code}`].filter(Boolean).join(" · ");
+      addChatMessage(`Vapi voice connection failed${details?` (${details})`:""}. The public key and assistant ID are present; this detail identifies what blocked the call.`);
     }
     document.getElementById("vapiStart").addEventListener("click",async()=>{
       if(VAPI_PUBLIC_API_KEY==="YOUR_PUBLIC_API_KEY"||VAPI_ASSISTANT_ID==="YOUR_ASSISTANT_ID"){addChatMessage("Your Ayyanar Jewellery support assistant is selected. Add its Vapi Public API Key to enable browser voice calls; never put a private Vapi key in this page.");return;}
@@ -763,12 +756,11 @@
         const Vapi=await loadVapiWidget();
         if(!vapiWidgetInstance){vapiWidgetInstance=new Vapi(VAPI_PUBLIC_API_KEY);connectVapiEvents(vapiWidgetInstance)}
         addChatMessage("Starting your voice call. Allow microphone access when your browser asks.");
-        const assistantOverrides={model:{provider:"openai",model:"gpt-4.1-mini",messages:[{role:"system",content:voiceRuntimeSystemPrompt()}]}};
-        await vapiWidgetInstance.start(VAPI_ASSISTANT_ID,assistantOverrides);
+        const assistantOverrides={model:{provider:"openai",model:"gpt-live-1",speaker:{instructions:voiceRuntimeSystemPrompt()}}};
+        const activeCall=await vapiWidgetInstance.start(VAPI_ASSISTANT_ID,assistantOverrides);
+        vapiControlUrl=activeCall?.monitor?.controlUrl||null;
       }catch(error){
-        console.error("Vapi call failed",error);
-        const detail=error?.name==="NotAllowedError"||/microphone|permission/i.test(String(error?.message||""))?"Microphone access is blocked. Allow it in your browser’s site settings, reload, and try again.":"The call could not connect. Check that your Vapi Public API Key allows this Netlify website and the Ayyanar assistant.";
-        addChatMessage(detail);
+        reportVapiFailure(error);
       }finally{vapiCallStarting=false;setVoiceButtonState(vapiCallActive);}
     });
     async function getLandmarker(kind) {
@@ -820,22 +812,22 @@
       if(spokenDescription)parts.push("Positive description already shown in chat; speak this aloud: "+spokenDescription);
       return parts.join(" ");
     }
-    function sendPhotoSummaryToVoice(analysis,item,spokenDescription=""){
-      if(!vapiCallActive||typeof vapiWidgetInstance?.send!=="function")return false;
+    async function sendVapiLiveControl(command){
+      if(!vapiCallActive||!vapiControlUrl)return false;
       try{
-        const contextResult=vapiWidgetInstance.send({type:"add-message",message:{role:"user",content:photoStylingSummary(analysis,item,spokenDescription)},triggerResponseEnabled:false});
-        if(contextResult&&typeof contextResult.catch==="function")contextResult.catch(error=>console.warn("Could not share the private on-device photo summary with Vapi.",error));
-        if(spokenDescription&&!sendVoiceSpokenReply(spokenDescription))return false;
-        return true;
-      }catch(error){console.warn("Could not send the private on-device styling summary to Vapi.",error);return false;}
+        const response=await fetch(vapiControlUrl,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${VAPI_PUBLIC_API_KEY}`},body:JSON.stringify(command)});
+        return response.ok;
+      }catch(error){console.warn("Vapi live context was unavailable.",error?.message||error);return false;}
+    }
+    async function sendPhotoSummaryToVoice(analysis,item,spokenDescription=""){
+      if(!vapiCallActive||!vapiControlUrl)return false;
+      const summary=photoStylingSummary(analysis,item,spokenDescription);
+      return await sendVapiLiveControl({type:"append-context",kind:"instructions",content:`The customer uploaded a jewellery try-on photo. The website analyzed it on the customer's device; only this short summary is shared, never the photo itself. ${summary} Respond warmly and positively to the customer now, mention the approximate findings, and give one specific jewellery suggestion. Say that the preview is approximate and lighting can affect the result.`});
     }
     function sendVoiceSpokenReply(text){
-      if(!vapiCallActive||typeof vapiWidgetInstance?.send!=="function")return false;
-      try{
-        const result=vapiWidgetInstance.send({type:"say",message:text,endCallAfterSpoken:false,interruptionsEnabled:true,interruptAssistantEnabled:true});
-        if(result&&typeof result.catch==="function")result.catch(error=>console.warn("Could not speak the deterministic jewellery quote through Vapi.",error));
-        return true;
-      }catch(error){console.warn("Could not speak the deterministic jewellery quote through Vapi.",error);return false;}
+      if(!vapiCallActive||!vapiControlUrl)return false;
+      sendVapiLiveControl({type:"append-context",kind:"instructions",content:`For the customer's current question, use this verified website estimate in your next spoken response. Say it clearly and concisely in your own voice: ${text}`});
+      return true;
     }
     function handleVoicePriceTranscript(raw){
       const text=String(raw||""),lower=text.toLowerCase(),grams=extractWeightGrams(lower),asksPrice=/price|cost|quote|estimate|how much|gold rate|gold price|per gram|916|22k|22 k|24k|24 k/.test(lower);
@@ -945,7 +937,7 @@
             lastTryOn={dataUrl,analysis,imageWidth:image.naturalWidth,imageHeight:image.naturalHeight};
             const toneText=analysis.visibleTone?`The visible skin-tone palette reads ${analysis.visibleTone.label} in this lighting. `:"";
             const response=area==="hand"?`Your hand is a lovely canvas for gold. ${toneText}${analysis.suggestion} Choose a design below to preview it.`:area==="face"?`Your portrait has a lovely balance. Your face proportions look ${analysis.shape}-shaped. ${toneText}${analysis.suggestion} Choose a design below for a preview.`:`Your neckline is a lovely place to add a little gold. ${toneText}${analysis.suggestion} Choose a chain or necklace below.`;
-            const result=addChatMessage(response);if(!sendPhotoSummaryToVoice(analysis,item,response))speakStylistResponse(response);
+            const result=addChatMessage(response);if(!await sendPhotoSummaryToVoice(analysis,item,response))speakStylistResponse(response);
             result.style.maxWidth="88%";appendTryOn(dataUrl,analysis,item);
           }catch(error){
             const kind=area==="hand"?"hand":"face",visibleTone=sampleVisiblePalette(image,kind),analysis={kind,area,approximate:true,privatePhoto:true,imageWidth:image.naturalWidth,imageHeight:image.naturalHeight,visibleTone,suggestions:area==="hand"?["ring","bracelet"]:area==="face"?["earrings"]:["necklaces","chains"],suggestion:(area==="hand"?"A delicate ring or slim bracelet can add a beautiful golden accent.":area==="face"?"A graceful pair of earrings can brighten your look.":"A fine chain can softly frame your neckline.")+" "+skinPaletteStyle(visibleTone)};
@@ -953,7 +945,7 @@
             const category=categories.find(value=>value.id===analysis.suggestions[0]),item=selected||category.items[0];pendingTryOnProductId=null;lastTryOn={dataUrl,analysis,imageWidth:image.naturalWidth,imageHeight:image.naturalHeight};
             const toneText=visibleTone?`The visible skin-tone palette reads ${visibleTone.label} in this lighting. `:"";
             const response=`Thanks for sharing your photo—it’s a lovely starting point for trying on jewellery. ${toneText}${analysis.suggestion} I’ve prepared an approximate preview for you.`;
-            addChatMessage(response);if(!sendPhotoSummaryToVoice(analysis,item,response))speakStylistResponse(response);appendTryOn(dataUrl,analysis,item);
+            addChatMessage(response);if(!await sendPhotoSummaryToVoice(analysis,item,response))speakStylistResponse(response);appendTryOn(dataUrl,analysis,item);
           }
         };image.onerror=()=>addChatMessage("I couldn't open that image. Please choose another photo.");image.src=dataUrl;
       };reader.onerror=()=>addChatMessage("The photo could not be read. Please choose it again.");reader.readAsDataURL(file);
@@ -995,14 +987,14 @@
         const response=`${label} ${toneText}${analysis.suggestion} Here is an approximate preview of ${item.name} on your photo.`;
         const dataUrl=canvas.toDataURL("image/jpeg",.9);stopStylistCamera();canvas.width=0;canvas.height=0;
         lastTryOn={dataUrl,analysis,imageWidth:analysis.imageWidth,imageHeight:analysis.imageHeight};
-        const result=addChatMessage(response);result.style.maxWidth="88%";if(!sendPhotoSummaryToVoice(analysis,item,response))speakStylistResponse(response);appendTryOn(dataUrl,analysis,item);
+        const result=addChatMessage(response);result.style.maxWidth="88%";if(!await sendPhotoSummaryToVoice(analysis,item,response))speakStylistResponse(response);appendTryOn(dataUrl,analysis,item);
       }catch(error){
         const wasCancelled=activeCameraCard!==card;if(wasCancelled){canvas.width=0;canvas.height=0;return;}
         const suggestions=area==="hand"?["ring","bracelet"]:area==="face"?["earrings","necklaces"]:["necklaces","chains"],selected=allProducts.find(product=>product.id===pendingTryOnProductId);
         const visibleTone=sampleVisiblePalette(canvas,area==="hand"?"hand":"face"),analysisFallback={kind:area==="hand"?"hand":"face",area,approximate:true,privatePhoto:true,imageWidth:canvas.width,imageHeight:canvas.height,visibleTone,suggestions:[...new Set([selected?.categoryId,...suggestions].filter(Boolean))],suggestion:(area==="hand"?"A delicate ring or bracelet can add a lovely accent.":"A graceful jewellery design can complement your look.")+" "+skinPaletteStyle(visibleTone)};
         const fallbackCategory=categories.find(value=>value.id===analysisFallback.suggestions[0]),fallbackItem=selected||fallbackCategory.items[0],dataUrl=canvas.toDataURL("image/jpeg",.9);pendingTryOnProductId=null;stopStylistCamera();canvas.width=0;canvas.height=0;
         lastTryOn={dataUrl,analysis:analysisFallback,imageWidth:analysisFallback.imageWidth,imageHeight:analysisFallback.imageHeight};
-        const toneText=visibleTone?`The visible skin-tone palette reads ${visibleTone.label} in this lighting. `:"",message=`Thanks for sharing your photo. ${toneText}I’ve prepared an approximate preview of ${fallbackItem.name}; you can drag and resize it to line up with your hand or face.`;addChatMessage(message);if(!sendPhotoSummaryToVoice(analysisFallback,fallbackItem,message))speakStylistResponse(message);appendTryOn(dataUrl,analysisFallback,fallbackItem);
+        const toneText=visibleTone?`The visible skin-tone palette reads ${visibleTone.label} in this lighting. `:"",message=`Thanks for sharing your photo. ${toneText}I’ve prepared an approximate preview of ${fallbackItem.name}; you can drag and resize it to line up with your hand or face.`;addChatMessage(message);if(!await sendPhotoSummaryToVoice(analysisFallback,fallbackItem,message))speakStylistResponse(message);appendTryOn(dataUrl,analysisFallback,fallbackItem);
       }
     }
     document.getElementById("cameraFaceButton").addEventListener("click",startCameraTryOn);
