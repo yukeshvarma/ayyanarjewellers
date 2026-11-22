@@ -1,2 +1,7 @@
 [build]
-  publish = "."
+ publish = "."
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
