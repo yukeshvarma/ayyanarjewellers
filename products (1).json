@@ -1,0 +1,27 @@
+{
+  "replaceCatalogue": false,
+  "deletedIds": [
+    "AJ-001"
+  ],
+  "products": [
+    {
+      "id": "AJ-001",
+      "sku": "AJ-G-01",
+      "name": "NECKLACE",
+      "metal": "gold",
+      "categoryId": "necklace",
+      "quantity": 1,
+      "weightGrams": 12.08,
+      "wastagePercent": 8,
+      "makingCharges": 1000,
+      "makingChargePerGram": 0,
+      "discountPercent": 1.5,
+      "gstPercent": 3,
+      "image": "C:\\Ayyanar-Jewellers-GitHub-Deploy\\assets\\products\\NECKLACE_PRODUCT_1.png",
+      "model": "C:\\Ayyanar-Jewellers-GitHub-Deploy\\assets\\products\\NECKLACE_PRODUCT_1_MODEL.png",
+      "detail": "HUID-ZXRGHT",
+      "note": "12.08",
+      "hsn": "7113"
+    }
+  ]
+}

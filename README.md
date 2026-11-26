@@ -4,13 +4,14 @@ Official target website: **https://ayyanarjewellerssayalgudi.netlify.app/**
 
 ## What's included
 
-- `index.html` — jewellery catalogue, gold/silver reference rates, bilingual sections, voice-enabled customer assistant (browser speech support required), savings scheme calculator, old-gold estimate, contact links and leadership.
+- `index.html` — jewellery catalogue, live Thangamayil gold/silver rates, bilingual sections, voice-enabled customer assistant (browser speech support required), savings scheme calculator, old-gold estimate, contact links and leadership.
 - `scheme-poster-details.jpeg` — original Tamil promotional poster, preserved unchanged.
 - `scheme-poster-aj-concept.webp` — **approved illustrative** poster graphic with a black-background AJ monogram and gift box. It is not the source of the business terms; use the unedited poster for exact conditions.
 - `bridal-concept-approved.webp` — AI-generated bridal visual selected for the site. **Not a celebrity endorsement**.
-- `admin.html` — local editor to export `products.json` and `rates.json`. **Not an authenticated database/admin portal**.
+- `admin.html` — local product editor to export `products.json`, plus a Surabi market monitor with its public page, browser alerts, 22K chart, weekly/monthly comparisons and CSV export. Daily Thangamayil rates load automatically. **Not an authenticated database/admin portal**. Rate history is stored only in that browser.
 - `products.json` — published products, removed IDs and whether to hide the illustrative built-in catalogue.
-- `rates.json` — shop-provided manual gold and silver reference rates, not an automatic Thangamayil feed.
+- `rates.json` — last-resort backup rates used only if the live rate service is unavailable. It is not used for routine daily rate updates.
+- `netlify/functions/thangamayil-rates.mjs` — reads the published rates from Thangamayil’s public homepage for the website and product editor.
 - `google04118ca32b07924e.html` — exact Google Search Console HTML-file verification.
 - `sitemap.xml`, `robots.txt`, `netlify.toml` — crawler and hosting configuration.
 
@@ -21,7 +22,8 @@ Official target website: **https://ayyanarjewellerssayalgudi.netlify.app/**
 3. Commit to the production branch (usually `main`).
 4. On Netlify, set **Build command: empty**, **Publish directory: `.`**. Deploy the latest commit.
 5. Check the homepage, `sitemap.xml` and `google04118ca32b07924e.html` under `https://ayyanarjewellerssayalgudi.netlify.app/`.
-6. In Search Console, create a **URL prefix** property for the exact URL and select HTML-file verification. Once it verifies, submit `sitemap.xml`.
+6. Confirm Netlify deploys the `netlify/functions` directory along with the site. The rates function deploys automatically with the files.
+7. In Search Console, create a **URL prefix** property for the exact URL and select HTML-file verification. Once it verifies, submit `sitemap.xml`.
 
 ## Adding products in the product editor
 
@@ -33,7 +35,7 @@ Official target website: **https://ayyanarjewellerssayalgudi.netlify.app/**
 6. To remove an item, use **Remove** in the editor and export again. For built-in example designs, enter its ID under **Remove existing design ID** and export.
 7. If you want only your real inventory (not the demo products), select **Show only products from products.json** and publish your full product set.
 
-**Price calculation (per piece)**: metal weight × per-gram rate + wastage percentage of metal price + making charges, minus discount on the subtotal, plus GST on the discounted value. Change `rates.json` in the editor every time reference rates change and commit the file. The website recalculates current listed product prices from those rates when a visitor loads the page.
+**Price calculation (per piece)**: metal weight × current Thangamayil per-gram rate (22K for gold products, silver for silver products) + wastage percentage of metal price + making charges, minus discount on the subtotal, plus GST on the discounted value. Rates refresh automatically; daily rate changes do not require downloading `rates.json` or redeploying the website. Product prices recalculate when the page loads. New or edited inventory still requires exporting and publishing `products.json`.
 
 **Example of a silver product**:
 
@@ -77,7 +79,7 @@ The voice controls use native browser speech recognition and speech synthesis an
 
 ## Publishing notes
 
-- Rates start from shop-provided examples: **22K ₹11,465/g** and **silver ₹175/g**. They do not update automatically from an external jewellery site.
+- The homepage and product editor load rates from Thangamayil’s [public rate board](https://www.thangamayil.com/). The Netlify function reads the posted rate text; if Thangamayil changes its page format, the parser may need an update. `rates.json` is only a fallback for outages. The separate Surabi Market Watch lets you save local snapshots for comparison; those snapshots do not affect product prices.
 - Don't publish fictional shop items as if they are available stock. Replace/disable the original illustrative catalogue when your actual inventory is ready.
 - The **“1 lakh+ beneficiaries”** figure is attributed to the business and is not independently verified.
 - An AI-generated bridal illustration is not evidence of any celebrity collaboration or endorsement.
